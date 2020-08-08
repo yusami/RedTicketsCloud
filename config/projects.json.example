@@ -1,0 +1,4 @@
+{
+    "identifier": ["foo", "bar"],
+    "issue.filter": [["foo", "aws"], ["foo", "iot"]]
+}
