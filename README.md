@@ -65,6 +65,14 @@ $ python3 main.py
 * WordCloud image is exported in `image` folder.
   * `image/<PROJECT_ID>.png`
 
+## Unit test
+
+* Call the command below.
+
+~~~
+$ python3 -m unittest discover tests
+~~~
+
 ## Acknowledgments
 
 * [amueller/word_cloud](https://github.com/amueller/word_cloud)
