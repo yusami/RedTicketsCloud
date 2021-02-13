@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
 import time
 import json
 import pickle
@@ -15,6 +16,7 @@ class IssueExtractor:
         self.load_config()
 
     def load_config(self):
+        print("::%s called" % sys._getframe().f_code.co_name)
         # Redmine configs
         load_dotenv(verbose=True)
         API_KEY = os.environ.get("REDMINE_API_KEY")

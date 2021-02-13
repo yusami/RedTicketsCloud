@@ -133,3 +133,4 @@ data/
 image/
 tmp/
 .vscode/
+*.code-workspace

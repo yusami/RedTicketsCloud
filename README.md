@@ -7,7 +7,7 @@
 
 ## Requirement
 
-* Python 3.8
+* Python 3.9
 
 ## Installation
 
@@ -72,7 +72,7 @@ $ python3 main.py
 
 ## Licence
 
-* Copyright (c) 2020, [Yasushi Usami](https://github.com/yusami)
+* Copyright (c) 2020-2021, [Yasushi Usami](https://github.com/yusami)
 * Licensed under the [Apache License, Version 2.0][Apache]
 
 [Apache]: http://www.apache.org/licenses/LICENSE-2.0

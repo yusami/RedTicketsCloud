@@ -129,7 +129,7 @@ class ImageCreator:
                         # OneCharacterReplaceFilter()
                         ]
 
-        analyzer = Analyzer(char_filters, tokenizer, token_filters)
+        analyzer = Analyzer(char_filters=char_filters, tokenizer=tokenizer, token_filters=token_filters)
 
         token_list = []
         for line in text.splitlines():
