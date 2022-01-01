@@ -131,6 +131,10 @@ dmypy.json
 # Project
 data/
 image/
+test/
 tmp/
 .vscode/
 *.code-workspace
+*.example
+config/projects.json
+

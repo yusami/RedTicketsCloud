@@ -1,4 +1,5 @@
 {
+    "REDMINE_URL": "http://server/redmine",
     "identifier": ["foo", "bar"],
     "issue.filter": [["foo", "aws"], ["foo", "iot"]]
 }
