@@ -19,6 +19,9 @@ outdated: ## Show the outdated libs
 run: ## Run the script (default)
 	python3 main.py
 
+test: ## Unit test
+	python3 -m unittest discover tests
+
 clean: ## Delete the existing libs
 	rm -rf ./__pycache__
 
