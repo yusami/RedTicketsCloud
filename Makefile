@@ -1,4 +1,4 @@
-.PHONY: help all run clean
+.PHONY: help all run clean test
 .DEFAULT_GOAL := run
 
 help: ## Show help text
