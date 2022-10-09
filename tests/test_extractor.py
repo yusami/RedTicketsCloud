@@ -4,10 +4,11 @@ import pickle
 import json
 from pathlib import Path
 from redminelib import Redmine, exceptions
-sys.path.append(str(Path(__file__).resolve().parent.parent))
-from extractor import IssueExtractor
+sys.path.append(str(Path(__file__).resolve().parent.parent.joinpath("lib")))
+from lib.extractor import IssueExtractor
 import unittest
 from unittest.mock import patch, Mock
+import pprint
 
 def mocked_redmine(*args, **kwargs):
 
@@ -20,6 +21,7 @@ def mocked_redmine(*args, **kwargs):
 
             self.project = MockProjects(self.__redmine)
             self.issue = MockIssues(self.__redmine, self.project)
+            print("::MockRedmine is initialized")
 
     class MockProjects:
         def __init__(self, redmine):
@@ -35,7 +37,6 @@ def mocked_redmine(*args, **kwargs):
                 return []
             pj = self.__redmine.project.new()
             pj.identifier = 'myproject'
-            # pj.id = 1   -> Impossible to set read only attribute
             pj.name = 'darkside'
             pj.status = 2
             pj.description = "abc"
@@ -58,24 +59,30 @@ def mocked_redmine(*args, **kwargs):
             if offset > 0:
                 print("::No more issue found")
                 return []
-            issue1 = self.__redmine.issue.new()
-            issue2 = self.__redmine.issue.new()
 
-            issues = [issue1, issue2]
-            print("::Mock issue list created: %s" % issues)
+            issues = []
+            for i in range(1,3):
+                issue = self.__redmine.issue.new()
+                issue.project_id = project_id
+                issue.subject = ('subject_%d' % i)
+                issue.description = ('description_%d' % i)
+                issue.status_id = i * 2
+                issues.append( issue )
+                print("::Mock issue is created: %s" % issue)
+
+            print("::Mock issue list: %s" % issues)
             return issues
 
         def get(self, issue_id, include):
             print("::MockIssues#get called, issue_id: %d" % issue_id)
             issue = self.__redmine.issue.new()
-            # issue.id = issue_id  -> Impossible to set read only attribute
             issue.project_id = "myproject"
-            issue.subject = ('issue_%d' % issue_id)
-            issue.description = '_abc_'
-            issue.status_id = 3
+            issue.subject = ('subject_%d' % issue_id)
+            issue.description = ('description_%d' % issue_id)
+            issue.status_id = (issue_id * 2)
+            # pprint.pprint(vars(issue))
 
-            # print("::Mock issue created: %s" % vars(issue))
-            print("::Mock issue created: %s" % issue)
+            # print("::Mock issue is retrieved for id: %d, subject: %s" % (issue_id, issue.subject))
             return issue
 
     return MockRedmine(args[0], key=kwargs['key'])
@@ -83,7 +90,7 @@ def mocked_redmine(*args, **kwargs):
 # Test class
 class TestRedmineResponse(unittest.TestCase):
  
-    @patch('extractor.Redmine', side_effect=mocked_redmine)
+    @patch('lib.extractor.Redmine', side_effect=mocked_redmine)
     def test_redmine_projects(self, mock_get):
         print("::%s called" % sys._getframe().f_code.co_name)
         ie = IssueExtractor()
@@ -104,20 +111,16 @@ class TestRedmineResponse(unittest.TestCase):
         print("::issue ids: %s" % ids)
         self.assertEqual(2, len(ids))
 
-        # Issue detail #0
-        issue = ie.fetch_issue_detail(0)
-        # print(issue)
-        self.assertEqual("issue_0", issue.subject)
-        self.assertEqual("_abc_", issue.description)
-        self.assertEqual(3, issue.status_id)
-
-        # Issue detail #1
-        issue = ie.fetch_issue_detail(1)
-        self.assertEqual("issue_1", issue.subject)
+        # Issue detail
+        for i in range(1,3):
+            issue = ie.fetch_issue_detail( i )
+            self.assertEqual(("subject_%d" % i), issue.subject)
+            self.assertEqual(("description_%d" % i), issue.description)
+            self.assertEqual(i * 2, issue.status.id)
 
         self.assertEqual(1, mock_get.call_count)
         API_KEY = os.environ.get("REDMINE_API_KEY")
-        mock_get.assert_called_with('http://localhost/redmine/', key=API_KEY)
+        # mock_get.assert_called_with('http://localhost/redmine/', key=API_KEY)
         # print(mock_get.mock_calls)
 
 if __name__ == '__main__':
