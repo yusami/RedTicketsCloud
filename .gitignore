@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-# lib/
+lib/
 lib64/
 parts/
 sdist/
@@ -131,7 +131,6 @@ dmypy.json
 # Project
 data/
 image/
-test/
 tmp/
 .vscode/
 *.code-workspace

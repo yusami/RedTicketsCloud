@@ -12,7 +12,7 @@ from gensim import corpora
 from wordcloud import WordCloud
 # import matplotlib.pyplot as plt
 import json
-from lib.utils import setup_folder
+from src.utils import setup_folder
 
 class ImageCreator:
 

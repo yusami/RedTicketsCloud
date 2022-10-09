@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from redminelib import Redmine, exceptions
 sys.path.append(str(Path(__file__).resolve().parent.parent.joinpath("lib")))
-from lib.extractor import IssueExtractor
+from src.extractor import IssueExtractor
 import unittest
 from unittest.mock import patch, Mock
 import pprint
@@ -90,7 +90,7 @@ def mocked_redmine(*args, **kwargs):
 # Test class
 class TestRedmineResponse(unittest.TestCase):
  
-    @patch('lib.extractor.Redmine', side_effect=mocked_redmine)
+    @patch('src.extractor.Redmine', side_effect=mocked_redmine)
     def test_redmine_projects(self, mock_get):
         print("::%s called" % sys._getframe().f_code.co_name)
         ie = IssueExtractor()

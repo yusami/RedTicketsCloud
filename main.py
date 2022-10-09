@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from lib.extractor import IssueExtractor
-from lib.creator import ImageCreator
+from src.extractor import IssueExtractor
+from src.creator import ImageCreator
 
 if __name__ == '__main__':
     ie = IssueExtractor()
