@@ -7,7 +7,7 @@ import pickle
 from pathlib import Path
 from dotenv import load_dotenv
 from redminelib import Redmine, exceptions
-from utils import setup_folder
+from lib.utils import setup_folder
 
 class IssueExtractor:
     __redmine = None

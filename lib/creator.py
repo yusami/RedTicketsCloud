@@ -10,9 +10,9 @@ from janome.tokenizer import Tokenizer
 from janome.tokenfilter import *
 from gensim import corpora
 from wordcloud import WordCloud
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import json
-from utils import setup_folder
+from lib.utils import setup_folder
 
 class ImageCreator:
 
@@ -22,7 +22,7 @@ class ImageCreator:
 
         Parameters
         ----------
-        data_dir : String
+        data_dir : Path
             Directory which have issue data
         """
         assert data_dir.exists() and data_dir.is_dir(), "Data folder should exist."
@@ -83,7 +83,7 @@ class ImageCreator:
 
         Parameters
         ----------
-        data_dir : String
+        data_dir : Path
             Directory which have issue data
         text : String
             Text data to parse
@@ -169,7 +169,7 @@ class ImageCreator:
 
         Parameters
         ----------
-        data_dir : String
+        data_dir : Path
             Directory which have issue data
         text : String
             Text data to draw
@@ -198,27 +198,24 @@ class ImageCreator:
                 ss = file.read()
                 stop_words = ss.split('\n')
 
-        # Create the WordCloud image.
-        wordcloud = WordCloud(background_color = "white",
-                            font_path = fpath,
-                            collocations = False,
-                            width = 800,
-                            height = 500,
-                            stopwords=set(stop_words)).generate(text)
-
         # Image file path
         image_dir = Path('image')
         image_dir.mkdir(exist_ok=True)
         imagefile = image_dir.joinpath(data_dir.name + ".png")
-        print("draw image: %s" % imagefile)
+        imagefile.unlink(missing_ok=True)
 
-        # Draw the image and save it.
-        plt.figure(figsize=(6, 4))
-        plt.imshow(wordcloud)
-        plt.axis("off")
-        plt.tight_layout()
-        plt.savefig(imagefile)
-        plt.close()
+        # Create the WordCloud image.
+        wordcloud = WordCloud(
+                            background_color = "white",
+                            font_path = fpath,
+                            collocations = False,
+                            width = 1200,
+                            height = 800,
+                            stopwords=set(stop_words))
+        wordcloud.generate(text)
+        wordcloud.to_file(imagefile)
+        print("draw image: %s" % imagefile)
+        assert imagefile.exists(), ("Image file should exist. %s" % imagefile)
 
     def parse_and_draw_for_project(self, data_dir):
         """
@@ -226,7 +223,7 @@ class ImageCreator:
 
         Parameters
         ----------
-        data_dir : String
+        data_dir : Path
             Directory which have issue data
         """
         assert data_dir.exists() and data_dir.is_dir(), "Data folder should exist."
