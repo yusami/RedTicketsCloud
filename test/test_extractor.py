@@ -23,12 +23,14 @@ def mocked_redmine(*args, **kwargs):
             self.project = MockProjects(self.__redmine)
             assert self.project != None, "MockProjects instance should be created."
 
-            projects = self.project.all(0, 0)
-            assert projects != None, "Projects list should be valid."
-            assert len(projects) > 0, "Projects list #0 should be valid."
+            projects = self.project.all(offset=0, limit=0)
+            assert len(projects) > 0, "Project list should have valid data."
 
             self.issue = MockIssues(self.__redmine, projects[0])
             assert self.issue != None, "Issues should be valid."
+
+            issues = self.issue.all(offset=0, limit=0, sort="id:asc", include={})
+            assert len(issues) > 0, "Issue list should have valid data."
 
             print("::MockRedmine is initialized")
 
@@ -43,9 +45,9 @@ def mocked_redmine(*args, **kwargs):
             self.__projects = []
             for i in range(1,3):
                 pj = self.__redmine.project.new()
-                pj.identifier = 'identifier_mock_%d' % i
-                pj.name = 'name_mock_%d' % i
-                pj.description = "description_mock_%d" % i
+                pj.identifier = ('identifier_mock_%d' % i)
+                pj.name = ('name_mock_%d' % i)
+                pj.description = ("description_mock_%d" % i)
                 pj.status = i
                 self.__projects.append(pj)
                 print("::Mock project is created: %s" % pj.identifier)
@@ -78,11 +80,11 @@ def mocked_redmine(*args, **kwargs):
                 issue.subject = ('subject_%d' % i)
                 issue.description = ('description_%d' % i)
                 issue.status_id = (i * 2)
-                issues.append( issue)
+                issues.append( issue )
             print("::Mock issue list: %s" % issues)
             self.__issues = issues
         
-        def all(self, project_id, offset, limit, sort, include):
+        def all(self, offset, limit, sort, include):
             assert self.__issues != None, "Issues should be created."
 
             print("::MockIssues#all called, offset: %d, limit: %d" % (offset, limit))
