@@ -4,7 +4,6 @@ import pickle
 import json
 from pathlib import Path
 from redminelib import Redmine, exceptions
-sys.path.append(str(Path(__file__).resolve().parent.parent.joinpath("lib")))
 from src.extractor import IssueExtractor
 import unittest
 from unittest.mock import patch, Mock
@@ -14,75 +13,104 @@ def mocked_redmine(*args, **kwargs):
 
     class MockRedmine:
         def __init__(self, url, key=kwargs['key']):
-            print("::MockRedmine initialized, url:%s" % (url))
-            # Create the dummy redmine object to create other data
+            assert url != None, "URL should be valid."
+
+            print("::Initialize MockRedmine, url:%s" % (url))
             self.__redmine = Redmine(url, key=kwargs['key'])
             assert self.__redmine != None, "Redmine instance should be created."
 
+            # Create the mock instances
             self.project = MockProjects(self.__redmine)
-            self.issue = MockIssues(self.__redmine, self.project)
+            assert self.project != None, "MockProjects instance should be created."
+
+            projects = self.project.all(0, 0)
+            assert projects != None, "Projects list should be valid."
+            assert len(projects) > 0, "Projects list #0 should be valid."
+
+            self.issue = MockIssues(self.__redmine, projects[0])
+            assert self.issue != None, "Issues should be valid."
+
             print("::MockRedmine is initialized")
 
     class MockProjects:
         def __init__(self, redmine):
-            assert redmine != None, "Redmine instance should be created."
+            assert redmine != None, "Redmine instance should be valid."
 
-            print("::MockProjects initialized")
+            print("::Initialize MockProjects")
             self.__redmine = redmine
+
+            # Create the mock project
+            self.__projects = []
+            for i in range(1,3):
+                pj = self.__redmine.project.new()
+                pj.identifier = 'identifier_mock_%d' % i
+                pj.name = 'name_mock_%d' % i
+                pj.description = "description_mock_%d" % i
+                pj.status = i
+                self.__projects.append(pj)
+                print("::Mock project is created: %s" % pj.identifier)
         
         def all(self, offset, limit):
+            assert self.__projects != None, "Projects should be created."
+
             print("::MockProjects#all called, offset: %d, limit: %d" % (offset, limit))
             if offset > 0:
                 print("::No more project found")
                 return []
-            pj = self.__redmine.project.new()
-            pj.identifier = 'myproject'
-            pj.name = 'darkside'
-            pj.status = 2
-            pj.description = "abc"
 
-            # print("::Mock project created: %s" % vars(pj))
-            print("::Mock project created: %s" % pj.identifier)
-            projects = [pj]
-            # self.issue = MockIssues(self.__redmine, pj)
-            return projects
+            return self.__projects
 
     class MockIssues:
         def __init__(self, redmine, project):
-            assert redmine != None, "Redmine instance should be created."
+            assert redmine != None, "Redmine argv should be valid."
+            assert project != None, "Project argv should be valid."
+            assert project.identifier != None, "Project identifier should be valid."
+            # pprint.pprint(vars(project))
 
-            print("::MockIssues initialized")
+            print("::Initialize MockIssues")
             self.__redmine = redmine
+
+            # Create the dummy issues
+            issues = []
+            for i in range(1,3):
+                issue = self.__redmine.issue.new()
+                issue.project_id = project.identifier
+                issue.subject = ('subject_%d' % i)
+                issue.description = ('description_%d' % i)
+                issue.status_id = (i * 2)
+                issues.append( issue)
+            print("::Mock issue list: %s" % issues)
+            self.__issues = issues
         
+        def all(self, project_id, offset, limit, sort, include):
+            assert self.__issues != None, "Issues should be created."
+
+            print("::MockIssues#all called, offset: %d, limit: %d" % (offset, limit))
+            if offset > 0:
+                print("::No more issue found")
+                return []
+
+            return self.__issues
+
         def filter(self, project_id, subproject_id, offset, limit, status_id, sort):
+            assert self.__issues != None, "Issues should be created."
+
             print("::MockIssues#filter called, offset: %d, limit: %d" % (offset, limit))
             if offset > 0:
                 print("::No more issue found")
                 return []
 
-            issues = []
-            for i in range(1,3):
-                issue = self.__redmine.issue.new()
-                issue.project_id = project_id
-                issue.subject = ('subject_%d' % i)
-                issue.description = ('description_%d' % i)
-                issue.status_id = i * 2
-                issues.append( issue )
-                print("::Mock issue is created: %s" % issue)
-
-            print("::Mock issue list: %s" % issues)
-            return issues
+            return self.__issues
 
         def get(self, issue_id, include):
-            print("::MockIssues#get called, issue_id: %d" % issue_id)
-            issue = self.__redmine.issue.new()
-            issue.project_id = "myproject"
-            issue.subject = ('subject_%d' % issue_id)
-            issue.description = ('description_%d' % issue_id)
-            issue.status_id = (issue_id * 2)
-            # pprint.pprint(vars(issue))
+            assert self.__issues != None, "Issues should be created."
 
-            # print("::Mock issue is retrieved for id: %d, subject: %s" % (issue_id, issue.subject))
+            print("::MockIssues#get called, issue_id: %d" % issue_id)
+            issue = None
+            print( "::Issue list length: %d, issue id: %d" % (len(self.__issues), issue_id))
+            if (0 < issue_id) and (issue_id <= len(self.__issues)):
+                issue = self.__issues[ issue_id - 1 ]
+
             return issue
 
     return MockRedmine(args[0], key=kwargs['key'])
@@ -95,20 +123,22 @@ class TestRedmineResponse(unittest.TestCase):
         print("::%s called" % sys._getframe().f_code.co_name)
         ie = IssueExtractor()
 
-        # Project by mock
+        # Project list
         projects = ie.fetch_projects()
-        self.assertEqual(1, len(projects))
-        project = projects[0]
-        # print("::Received response: %s" % vars(project))
+        self.assertEqual(2, len(projects))
         # print(vars(project))
-        self.assertEqual("myproject", project.identifier)
-        self.assertEqual("darkside", project.name)
-        self.assertEqual("abc", project.description)
-        self.assertEqual(2, project.status)
+
+        # Project detail
+        for i in range(1,3):
+            project = projects[ i-1 ]
+            self.assertEqual("identifier_mock_%d" % i, project.identifier)
+            self.assertEqual("name_mock_%d" % i, project.name)
+            self.assertEqual("description_mock_%d" % i, project.description)
+            self.assertEqual(i, project.status)
 
         # Issue list
-        ids = ie.fetch_issue_list(project)
-        print("::issue ids: %s" % ids)
+        ids = ie.fetch_issue_list(projects[0])
+        print("::Issue id list (ids are ignored): %s" % ids)
         self.assertEqual(2, len(ids))
 
         # Issue detail
@@ -117,11 +147,12 @@ class TestRedmineResponse(unittest.TestCase):
             self.assertEqual(("subject_%d" % i), issue.subject)
             self.assertEqual(("description_%d" % i), issue.description)
             self.assertEqual(i * 2, issue.status.id)
+            # pprint.pprint(vars(issue))
 
         self.assertEqual(1, mock_get.call_count)
         API_KEY = os.environ.get("REDMINE_API_KEY")
         # mock_get.assert_called_with('http://localhost/redmine/', key=API_KEY)
-        # print(mock_get.mock_calls)
+        print(mock_get.mock_calls)
 
 if __name__ == '__main__':
     unittest.main()

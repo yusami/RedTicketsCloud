@@ -143,7 +143,7 @@ class IssueExtractor:
         # Fetch issue detail
         issue = self.__redmine.issue.get(issue_id, include=['changesets', 'journals'])
         # print("%d:%s (%s)" % (issue.id, issue.subject, issue.created_on))
-        print("%d, " % (issue.id), end="")
+        print("id: %d, " % (issue.id), end="")
         return issue
 
     def fetch_issues_for_project(self, project):
