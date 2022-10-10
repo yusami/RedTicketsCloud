@@ -20,7 +20,7 @@ class IssueExtractor:
         # Redmine configs
         load_dotenv(verbose=True)
         API_KEY = os.environ.get("REDMINE_API_KEY")
-        assert API_KEY != None, "Redmine api key should be configured."
+        assert API_KEY is not None, "Redmine api key should be configured."
 
         redmine_url = "http://localhost/redmine/"
         config_file = Path('config/projects.json')
@@ -34,7 +34,7 @@ class IssueExtractor:
         # create Redmine instance to call API
         print("url: %s" % redmine_url)
         self.__redmine = Redmine(redmine_url, key=API_KEY)
-        assert self.__redmine != None, "Redmine instance should be created."
+        assert self.__redmine is not None, "Redmine instance should be created."
 
     def fetch_projects(self):
         """
@@ -45,7 +45,7 @@ class IssueExtractor:
         projects : List of projects
             List of Redmine projet resource
         """
-        assert self.__redmine != None, "Redmine instance should be created."
+        assert self.__redmine is not None, "Redmine instance should be created."
 
         # Output directory
         data_dir = Path("data")
@@ -99,7 +99,7 @@ class IssueExtractor:
         ids : list of int
             List of issue ID
         """
-        assert self.__redmine != None, "Redmine instance should be created."
+        assert self.__redmine is not None, "Redmine instance should be created."
 
         ids = []
         offset = 0
@@ -137,7 +137,7 @@ class IssueExtractor:
         issue : Redmine issue data 
             Redmine issue resource
         """
-        assert self.__redmine != None, "Redmine instance should be created."
+        assert self.__redmine is not None, "Redmine instance should be created."
         assert type(issue_id) == int, "Issue id should be int."
 
         # Fetch issue detail
@@ -155,8 +155,8 @@ class IssueExtractor:
         project : Project
             Redmine resource to fetch
         """
-        assert self.__redmine != None, "Redmine instance should be created."
-        assert project != None, "Redmine project should be given."
+        assert self.__redmine is not None, "Redmine instance should be created."
+        assert project is not None, "Redmine project should be given."
 
         # Output directory
         data_dir = Path("data").joinpath(project.identifier)

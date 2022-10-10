@@ -3,7 +3,6 @@ import re
 import os
 import pickle
 from pathlib import Path
-import urllib.request
 from janome.charfilter import *
 from janome.analyzer import Analyzer
 from janome.tokenizer import Tokenizer
@@ -243,7 +242,7 @@ class ImageCreator:
         data_dir = Path('data')
         # Search data files in the source folder
         for datafile in sorted(data_dir.glob('**/issues.pickle')):
-            print("issue file: %s" % datafile)
+            print("Read issue file: %s" % datafile)
             self.parse_and_draw_for_project(datafile.parent)
 
 if __name__ == "__main__":
