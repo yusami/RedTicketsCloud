@@ -9,11 +9,26 @@ from dotenv import load_dotenv
 from redminelib import Redmine, exceptions
 from src.utils import setup_folder
 import logging
+from functools import wraps
+
+def my_log(logger):
+    # decorator for logger
+    def decorator_fn(fn):
+        @wraps(fn)
+        def wrap_fn(*args, **kwargs):
+            local_args = locals()
+            logger.debug(f"{fn.__name__} is called: {str(local_args)}")
+            return_val = fn(*args, **kwargs)
+            logger.debug(f"{fn.__name__} is complete: {str(return_val)}")
+            return return_val
+        return wrap_fn
+    return decorator_fn
 
 class IssueExtractor:
     __redmine = None
 
     def __init__(self):
+        # logger
         self.__logger = logging.getLogger(__file__)
         self.__logger.setLevel(logging.DEBUG)
         handler = logging.StreamHandler()
@@ -22,11 +37,12 @@ class IssueExtractor:
         handler.setFormatter(fmt)
         self.__logger.addHandler(handler)
 
+        # config
         self.load_config()
 
     def load_config(self):
         assert self.__logger is not None, "logger should be created."
-        self.__logger.debug("%s called" % sys._getframe().f_code.co_name)
+        self.__logger.debug("%s is called" % sys._getframe().f_code.co_name)
 
         # Redmine configs
         load_dotenv(verbose=True)
@@ -96,6 +112,7 @@ class IssueExtractor:
                 f.write(json.dumps(list(project), indent=2, ensure_ascii=False))
         return projects
 
+    @my_log(logging.getLogger(__file__))
     def fetch_issue_list(self, project):
         """
         Fetch the list of issue ID from Redmine project.
