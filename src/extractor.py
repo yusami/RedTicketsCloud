@@ -8,15 +8,26 @@ from pathlib import Path
 from dotenv import load_dotenv
 from redminelib import Redmine, exceptions
 from src.utils import setup_folder
+import logging
 
 class IssueExtractor:
     __redmine = None
 
     def __init__(self):
+        self.__logger = logging.getLogger(__file__)
+        self.__logger.setLevel(logging.DEBUG)
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        fmt = logging.Formatter("[%(asctime)s] %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s")
+        handler.setFormatter(fmt)
+        self.__logger.addHandler(handler)
+
         self.load_config()
 
     def load_config(self):
-        print("::%s called" % sys._getframe().f_code.co_name)
+        assert self.__logger is not None, "logger should be created."
+        self.__logger.debug("%s called" % sys._getframe().f_code.co_name)
+
         # Redmine configs
         load_dotenv(verbose=True)
         API_KEY = os.environ.get("REDMINE_API_KEY")
@@ -25,14 +36,14 @@ class IssueExtractor:
         redmine_url = "http://localhost/redmine/"
         config_file = Path('config/projects.json')
         if config_file.exists():
-            print("Read the config file: %s" % config_file)
+            self.__logger.debug("Read the config file: %s" % config_file)
             with open(config_file, 'r', encoding='utf-8') as f:
                 df = json.load(f)
             # Read Redmine url
             redmine_url = df.get("redmine.url", redmine_url)
 
         # create Redmine instance to call API
-        print("url: %s" % redmine_url)
+        self.__logger.debug("url: %s" % redmine_url)
         self.__redmine = Redmine(redmine_url, key=API_KEY)
         assert self.__redmine is not None, "Redmine instance should be created."
 
@@ -55,7 +66,7 @@ class IssueExtractor:
         step = 50
         while True:
             try:
-                print("Fetching projects, offset: %d" % (offset))
+                self.__logger.debug("Fetching projects, offset: %d" % (offset))
                 pjs = self.__redmine.project.all(offset=offset, limit=step)
                 # print("List all projects: %s" % projects)
                 if len(pjs) == 0:
@@ -71,13 +82,13 @@ class IssueExtractor:
                 break
 
         for project in projects:
-            print("Project identifier: %s" % (project.identifier))
+            self.__logger.debug("Project identifier: %s" % (project.identifier))
             # Dump data
             project_dir = data_dir.joinpath(project.identifier)
             project_dir.mkdir(parents=True, exist_ok=True)
 
             project_file = project_dir.joinpath("project.pickle")
-            print("Write project: %s" % project_file)
+            self.__logger.debug("Write project: %s" % project_file)
             with open(project_file, "wb") as f:
                 pickle.dump(project, f)
             issuefile = project_dir.joinpath("project.json")
@@ -100,6 +111,7 @@ class IssueExtractor:
             List of issue ID
         """
         assert self.__redmine is not None, "Redmine instance should be created."
+        self.__logger.debug("Fetch issue list for project: %s" % (project.identifier))
 
         ids = []
         offset = 0
@@ -107,7 +119,7 @@ class IssueExtractor:
         while True:
             try:
                 # Fetch id list from Redmine
-                print("Fetching issues for project: %s, offset: %d" % (project.identifier, offset))
+                self.__logger.debug("Fetch issue list by offset: %d" % (offset))
                 issues = self.__redmine.issue.filter(project_id=project.id, subproject_id="!*", offset=offset, limit=step, status_id="*", sort='id:asc')
                 if len(issues) == 0:
                     break
@@ -143,7 +155,8 @@ class IssueExtractor:
         # Fetch issue detail
         issue = self.__redmine.issue.get(issue_id, include=['changesets', 'journals'])
         # print("%d:%s (%s)" % (issue.id, issue.subject, issue.created_on))
-        print("id: %d, " % (issue.id), end="")
+        # print("id: %d, " % (issue.id), end="")
+        # self.__logger.debug("%d:%s (%s)" % (issue.id, issue.subject, issue.created_on))
         return issue
 
     def fetch_issues_for_project(self, project):
@@ -166,7 +179,7 @@ class IssueExtractor:
         # Fetch ids of all issues for the project
         issue_list = self.fetch_issue_list(project)
 
-        print("Fetch issue detail...")
+        self.__logger.debug("Fetch issue detail...")
         issues = []
         i = 0
         for issue_id in issue_list:
@@ -175,17 +188,16 @@ class IssueExtractor:
             issues.append(issue)
             # Export the issue
             issuefile = issue_dir.joinpath(str(issue_id) + ".json")
-            # print(filename)
             with open(issuefile, "w", encoding="utf-8") as f:
                 f.write(json.dumps(list(issue), indent=2, ensure_ascii=False))
             i += 1
             if i%10 == 0:
-                print("")
-        print("...done")
+                self.__logger.debug("issues: %d" % i)
+        self.__logger.debug("...done")
 
         # Export issues data
         dumpfile = data_dir.joinpath("issues.pickle")
-        print("Write issues: %s" % dumpfile)
+        self.__logger.debug("Write issues: %s" % dumpfile)
         with open(dumpfile, "wb") as f:
             pickle.dump(issues, f)
 
