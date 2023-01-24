@@ -80,7 +80,7 @@ $ python3 -m unittest discover tests
 
 ## Licence
 
-* Copyright (c) 2020-2022, [Yasushi Usami](https://github.com/yusami)
+* Copyright (c) 2020-2023, [Yasushi Usami](https://github.com/yusami)
 * Licensed under the [Apache License, Version 2.0][Apache]
 
 [Apache]: http://www.apache.org/licenses/LICENSE-2.0
