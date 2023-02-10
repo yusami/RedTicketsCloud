@@ -15,6 +15,8 @@
 
 ~~~
 $ pip3 install python-redmine python-dotenv janome wordcloud gensim
+or
+$ make install
 ~~~
 
 * Set Redmine API key.
@@ -46,6 +48,8 @@ fpath = '$HOME/Library/Fonts/ipagp.ttf'
 
 ~~~
 $ python3 main.py
+or
+$ make
 ~~~
 
 * Issue text is exported in `data` folder.
@@ -70,7 +74,9 @@ $ python3 main.py
 * Call the command below.
 
 ~~~
-$ python3 -m unittest discover tests
+$ python3 -m unittest discover test
+or
+$ make test
 ~~~
 
 ## Acknowledgments
