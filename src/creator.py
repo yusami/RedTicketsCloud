@@ -9,7 +9,6 @@ from janome.tokenizer import Tokenizer
 from janome.tokenfilter import *
 from gensim import corpora
 from wordcloud import WordCloud
-# import matplotlib.pyplot as plt
 import json
 from src.utils import setup_folder
 
@@ -42,7 +41,7 @@ class ImageCreator:
             text += issue.subject + "\n"
             text += issue.description + "\n"
             for journal in issue.journals:
-                if hasattr(journal, "notes"):
+                if (hasattr(journal, "notes")) and (journal.notes is not None):
                     # print(journal.notes))
                     text += journal.notes + "\n"
                     counter_notes += 1
