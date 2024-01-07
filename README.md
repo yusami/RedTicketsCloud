@@ -7,7 +7,7 @@
 
 ## Requirement
 
-* Python 3.10
+* Python 3.11
 
 ## Installation
 
@@ -86,7 +86,7 @@ $ make test
 
 ## Licence
 
-* Copyright (c) 2020-2023, [Yasushi Usami](https://github.com/yusami)
+* Copyright (c) 2020-2024, [Yasushi Usami](https://github.com/yusami)
 * Licensed under the [Apache License, Version 2.0][Apache]
 
 [Apache]: http://www.apache.org/licenses/LICENSE-2.0
